@@ -1,7 +1,8 @@
 import tweepy
 
 from myconf import (consumer_key, consumer_secret,
-                    access_token, access_token_secret)
+                    access_token, access_token_secret,
+                    printer_vendor, printer_device)
 
 
 class ElectricMonk(tweepy.StreamListener):
@@ -17,11 +18,19 @@ class ElectricMonk(tweepy.StreamListener):
 
         api = tweepy.API(auth)
 
-        self.follow = map(lambda un: api.get_user(un).id_str, screen_names)
+        self.screen_names = []
+        self.user_ids = []
+        for n in screen_names:
+            try:
+                self.user_ids.append(api.get_user(n).id_str)
+                self.screen_names.append(n)
+            except tweepy.TweepError as te:
+                print('error: cannot stream %s, msg: %s (ignoring)' %
+                      (n, te))
 
         myStream = tweepy.Stream(auth=api.auth, listener=self,
                                  tweet_mode='extended')
-        myStream.filter(follow=self.follow)
+        myStream.filter(follow=self.user_ids)
 
     def on_status(self, status):
         if not self.retweets and self.is_retweet(status):
@@ -74,7 +83,7 @@ if __name__ == "__main__":
 This is the version 1.5 of the Electric Monk. Further market research
 has shown that an Electric Monk nowadays does not answer the door
 anymore. There are simply no people showing up unannounced at the door.
-Therefore the version 1.5 needs no pinkish-looking skin top make it
+Therefore the version 1.5 needs no pinkish-looking skin to make it
 distinguishable from the normal purple skintones.
 
 A new requirement is believing the uttered nonsense on Twitter.
@@ -97,11 +106,14 @@ is just not possible without developping a fault.
 
     if (args.hardcopy):
         try:
-            printer = Usb(0x0416, 0x5011)
+            printer = Usb(printer_vendor, printer_device)
         except:
             print('can not open printer.')
     else:
         printer = None
 
-    ElectricMonk().start(args.screenname, onlyFrom=args.only_from,
-                         retweets=not args.no_retweets, printer=printer)
+    try:
+        ElectricMonk().start(args.screenname, onlyFrom=args.only_from,
+                             retweets=not args.no_retweets, printer=printer)
+    except KeyboardInterrupt:
+        pass

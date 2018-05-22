@@ -33,3 +33,5 @@ Optional: Install python-escpos for hardcopies on Epson ESCPOS compatible printe
 ```bash
 pip install python-escpos
 ```
+
+Rename myconf.example.py to myconf.py and insert your Twitter consumer key, secret, access token and secret.
