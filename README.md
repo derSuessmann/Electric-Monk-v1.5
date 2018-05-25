@@ -29,9 +29,12 @@ Install tweepy
 pip install tweepy
 ```
 
-Optional: Install python-escpos for hardcopies on Epson ESCPOS compatible printers
+Optional: Install python-escpos for hardcopies on Epson ESC-POS compatible printers
 ```bash
 pip install python-escpos
 ```
 
-Rename myconf.example.py to myconf.py and insert your Twitter consumer key, secret, access token and secret.
+Rename myconf.example.py to myconf.py and insert your Twitter consumer key, secret, access token and secret. Getting the consumer key was a bit hard for me. Twitter allows the creation of apps for user account with a registered mobile number and for some reason or another Twitter did not send the verification code for a week. Support did not answer, but after one week I retried registering the mobile number again with the same number (Firefox auto-completion) and I could verify my number and create an app on [Twitter Apps](https://apps.twitter.com).
+
+In this configuration script you may also change the vendor and device id, if you are using a different receipt printer.
+
