@@ -1,3 +1,17 @@
+"""
+This is the version 1.5 of the Electric Monk. Further market research
+has shown that an Electric Monk nowadays does not answer the door
+anymore. There are simply no people showing up unannounced at the door.
+Therefore the version 1.5 needs no pinkish-looking skin to make it
+distinguishable from the normal purple skintones.
+
+A new requirement is believing the uttered nonsense on Twitter.
+Electric Monk v1.5 will save you from the tedious task of believing all
+the tweets of selected Twitter users. Electric Monk v1.5 can only
+follow a small group of Twitter users. Believing everything on Twitter
+is just not possible without developping a fault.
+"""
+
 import tweepy
 
 from myconf import (consumer_key, consumer_secret,
@@ -23,10 +37,14 @@ class ElectricMonk(tweepy.StreamListener):
         for n in screen_names:
             try:
                 self.user_ids.append(api.get_user(n).id_str)
+                if n[0] != '@':
+                    n = '@' + n
                 self.screen_names.append(n)
             except tweepy.TweepError as te:
                 print('error: cannot stream %s, msg: %s (ignoring)' %
                       (n, te))
+
+        self.print_greeting()
 
         myStream = tweepy.Stream(auth=api.auth, listener=self,
                                  tweet_mode='extended')
@@ -51,6 +69,15 @@ class ElectricMonk(tweepy.StreamListener):
 
     def is_retweet(self, status):
         return status.text[:2] == "RT"
+
+    def print_greeting(self):
+        msg = '''Electric Monk v1.5
+==================
+believing everything for you from: '''
+        msg = msg + ', '.join(self.screen_names)
+        print(msg)
+        if self.printer:
+            self.printer.text(msg + '\n\n')
 
     def print_status(self, status):
         msg = "@"+status.author.screen_name
@@ -79,19 +106,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         description='Electric Monk v1.5',
-        epilog='''
-This is the version 1.5 of the Electric Monk. Further market research
-has shown that an Electric Monk nowadays does not answer the door
-anymore. There are simply no people showing up unannounced at the door.
-Therefore the version 1.5 needs no pinkish-looking skin to make it
-distinguishable from the normal purple skintones.
-
-A new requirement is believing the uttered nonsense on Twitter.
-Electric Monk v1.5 will save you from the tedious task of believing all
-the tweets of selected Twitter users. Electric Monk v1.5 can only
-follow a small group of Twitter users. Believing everything on Twitter
-is just not possible without developping a fault.
-                                     ''',
+        epilog=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('screenname', nargs='+',
                         help='screen name to stream')
