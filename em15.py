@@ -37,8 +37,8 @@ class ElectricMonk(tweepy.StreamListener):
         for n in screen_names:
             try:
                 self.user_ids.append(api.get_user(n).id_str)
-                if n[0] != '@':
-                    n = '@' + n
+                if n[0] == '@':
+                    n = n[1:]
                 self.screen_names.append(n)
             except tweepy.TweepError as te:
                 print('error: cannot stream %s, msg: %s (ignoring)' %
@@ -74,7 +74,7 @@ class ElectricMonk(tweepy.StreamListener):
         msg = '''Electric Monk v1.5
 ==================
 believing everything for you from: '''
-        msg = msg + ', '.join(self.screen_names)
+        msg = msg + ', '.join(map(lambda n: '@'+n, self.screen_names))
         print(msg)
         if self.printer:
             self.printer.text(msg + '\n\n')
