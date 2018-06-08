@@ -13,6 +13,7 @@ is just not possible without developping a fault.
 """
 
 import tweepy
+import emoji
 
 from myconf import (consumer_key, consumer_secret,
                     access_token, access_token_secret,
@@ -113,10 +114,11 @@ class ElectricMonk(tweepy.StreamListener):
 
         try:
             msg = msg + '\n' + self.__wrapper.wrap(
-                status.extended_tweet["full_text"])
+                emoji.demojize(status.extended_tweet["full_text"]))
             print(msg)
         except:
-            msg = msg + '\n' + self.__wrapper.wrap(status.text)
+            msg = msg + '\n' + self.__wrapper.wrap(
+                emoji.demojize(status.text))
             print(msg)
             if not self.is_retweet(status) and status.text[-1] == "…":
                 # only retweets should be shown truncated
