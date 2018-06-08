@@ -21,10 +21,11 @@ from myconf import (consumer_key, consumer_secret,
 
 class ElectricMonk(tweepy.StreamListener):
 
-    def start(self, screen_names, onlyFrom=True, retweets=True, printer=None):
+    def start(self, screen_names, onlyFrom=True, retweets=True, strong=False,
+              printer=None):
         self.onlyFrom = onlyFrom
         self.retweets = retweets
-        self.screen_names = screen_names
+        self.strong = strong
         self.printer = printer
 
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
@@ -91,12 +92,17 @@ believing everything for you from: '''
                 # only retweets should be shown truncated
                 print("TRUNCATED")
                 print()
-        print("=====")
+        if self.strong:
+            print("I believe you.")
 
         if self.printer:
             msg = msg.encode('ascii', 'ignore')
             msg = msg.decode()
-            printer.text(msg + '\n\n')
+            self.printer.text(msg + '\n')
+            if self.strong:
+                self.printer.set(align='right', text_type='b')
+                self.printer.text('I believe you.\n\n')
+                self.printer.set(align='left', text_type='normal')
 
 
 if __name__ == "__main__":
@@ -116,6 +122,8 @@ if __name__ == "__main__":
                         help='display only tweets from the given screen names')
     parser.add_argument('--no-retweets', action='store_true',
                         help='do not display retweets')
+    parser.add_argument('-v', '--strong-believer', action='store_true',
+                        help='show believing every tweet')
 
     args = parser.parse_args()
 
@@ -129,6 +137,7 @@ if __name__ == "__main__":
 
     try:
         ElectricMonk().start(args.screenname, onlyFrom=args.only_from,
-                             retweets=not args.no_retweets, printer=printer)
+                             retweets=not args.no_retweets,
+                             strong=args.strong_believer, printer=printer)
     except KeyboardInterrupt:
         pass
