@@ -19,13 +19,27 @@ from myconf import (consumer_key, consumer_secret,
                     printer_vendor, printer_device)
 
 
+class Wrapper:
+    def __init__(self, width=32):
+        from textwrap import TextWrapper
+
+        self.wrapper = TextWrapper(width=width)
+
+    def wrap(self, text):
+        paragraphs = text.split('\n\n')
+        return '\n\n'.join(map(lambda p: '\n'.join(self.wrapper.wrap(p)),
+                               paragraphs))
+
+
 class ElectricMonk(tweepy.StreamListener):
 
     def start(self, screen_names, onlyFrom=True, retweets=True, strong=False,
-              printer=None):
+              timestamp=False, purpose=False, printer=None):
         self.onlyFrom = onlyFrom
         self.retweets = retweets
         self.strong = strong
+        self.timestamp = timestamp
+        self.purpose = purpose
         self.printer = printer
 
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
@@ -51,6 +65,8 @@ class ElectricMonk(tweepy.StreamListener):
                                  tweet_mode='extended')
         myStream.filter(follow=self.user_ids)
 
+    __wrapper = Wrapper()
+
     def on_status(self, status):
         if not self.retweets and self.is_retweet(status):
             return True
@@ -72,24 +88,35 @@ class ElectricMonk(tweepy.StreamListener):
         return status.text[:2] == "RT"
 
     def print_greeting(self):
-        msg = '''Electric Monk v1.5
-==================
-believing everything for you
-from: '''
-        msg = msg + ', '.join(map(lambda n: '@'+n, self.screen_names))
+        msg = self.__wrapper.wrap('Electric Monk v1.5') + '\n'
+        msg = msg + self.__wrapper.wrap('==================') + '\n\n'
+        if self.purpose:
+            msg = msg + self.__wrapper.wrap(__doc__) + '\n\n'
+        msg = msg + self.__wrapper.wrap('Believing everything for you from:')
+
+        msg = msg + ' ' + self.__wrapper.wrap(', '.join(
+            map(lambda n: '@'+n, self.screen_names)))
+
         print(msg)
+        print()
+
         if self.printer:
             self.printer.set(text_type='b')
             self.printer.text(msg + '\n\n')
             self.printer.set(text_type='normal')
 
     def print_status(self, status):
-        msg = "@"+status.author.screen_name
+        msg = "@" + status.author.screen_name
+
+        if self.timestamp:
+            msg = msg + '\n' + str(status.created_at) + ' (UTC)'
+
         try:
-            msg = msg + '\n' + status.extended_tweet["full_text"]
+            msg = msg + '\n' + self.__wrapper.wrap(
+                status.extended_tweet["full_text"])
             print(msg)
         except:
-            msg = msg + '\n' + status.text
+            msg = msg + '\n' + self.__wrapper.wrap(status.text)
             print(msg)
             if not self.is_retweet(status) and status.text[-1] == "…":
                 # only retweets should be shown truncated
@@ -127,6 +154,10 @@ if __name__ == "__main__":
                         help='do not display retweets')
     parser.add_argument('-v', '--strong-believer', action='store_true',
                         help='show believing every tweet')
+    parser.add_argument('-t', '--timestamp', action='store_true',
+                        help='display the creation time')
+    parser.add_argument('--purpose', action='store_true',
+                        help='display reason for Electric Monk v1.5')
 
     args = parser.parse_args()
 
@@ -141,6 +172,9 @@ if __name__ == "__main__":
     try:
         ElectricMonk().start(args.screenname, onlyFrom=args.only_from,
                              retweets=not args.no_retweets,
-                             strong=args.strong_believer, printer=printer)
+                             strong=args.strong_believer,
+                             timestamp=args.timestamp,
+                             purpose=args.purpose,
+                             printer=printer)
     except KeyboardInterrupt:
         pass
