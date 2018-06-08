@@ -74,11 +74,14 @@ class ElectricMonk(tweepy.StreamListener):
     def print_greeting(self):
         msg = '''Electric Monk v1.5
 ==================
-believing everything for you from: '''
+believing everything for you
+from: '''
         msg = msg + ', '.join(map(lambda n: '@'+n, self.screen_names))
         print(msg)
         if self.printer:
+            self.printer.set(text_type='b')
             self.printer.text(msg + '\n\n')
+            self.printer.set(text_type='normal')
 
     def print_status(self, status):
         msg = "@"+status.author.screen_name
