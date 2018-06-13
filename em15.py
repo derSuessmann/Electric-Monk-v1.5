@@ -64,7 +64,7 @@ class ElectricMonk(tweepy.StreamListener):
 
         myStream = tweepy.Stream(auth=api.auth, listener=self,
                                  tweet_mode='extended')
-        myStream.filter(follow=self.user_ids)
+        myStream.filter(follow=self.user_ids, async=True)
 
     __wrapper = Wrapper()
 
