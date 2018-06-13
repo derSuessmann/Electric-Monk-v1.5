@@ -28,6 +28,10 @@ Install tweepy
 ```bash
 pip install tweepy
 ```
+Install emoji to display emojis in tweets as text
+```bash
+pip install emoji
+```
 
 Optional: Install python-escpos for hardcopies on Epson ESC-POS compatible printers
 ```bash
